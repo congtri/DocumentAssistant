@@ -73,13 +73,15 @@ if not exist "data\indexes" mkdir "data\indexes"
 if not exist "data\cache" mkdir "data\cache"
 if not exist "logs" mkdir "logs"
 
-:: Download model if not present
-set MODEL_DIR=models\gguf
-set MODEL_PATH=%MODEL_DIR%\Qwen_Qwen3.5-4B-Q4_K_M.gguf
+:: Read model path from config/model.yaml
+for /f "delims=" %%i in ('python -c "import yaml; config=yaml.safe_load(open('config/model.yaml')); print(config['model']['path'])"') do set MODEL_PATH=%%i
+set MODEL_PATH=%MODEL_PATH:/=\%
+
 if not exist "%MODEL_PATH%" (
     echo.
-    echo Downloading default model (Qwen3.5-4B-Q4_K_M^)...
-    if not exist "%MODEL_DIR%" mkdir "%MODEL_DIR%"
+    echo Configured model not found at: %MODEL_PATH%
+    echo Downloading Qwen3.5-4B-Q4_K_M...
+    for %%F in ("%MODEL_PATH%") do if not exist "%%~dpF" mkdir "%%~dpF"
     powershell -NoProfile -ExecutionPolicy Bypass -Command ^
         "Invoke-WebRequest -Uri 'https://huggingface.co/Qwen/Qwen3.5-4B-GGUF/resolve/main/qwen3.5-4b-q4_k_m.gguf' -OutFile '%MODEL_PATH%'"
     if %errorlevel% neq 0 (
@@ -88,7 +90,7 @@ if not exist "%MODEL_PATH%" (
         echo Model downloaded successfully.
     )
 ) else (
-    echo Model already present. Skipping download.
+    echo Model already present at: %MODEL_PATH%. Skipping download.
 )
 
 :: Install ChatUI dependencies

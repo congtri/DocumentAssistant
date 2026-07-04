@@ -95,12 +95,19 @@ mkdir -p data/indexes
 mkdir -p data/cache
 mkdir -p logs
 
-# Download model if not present
-MODEL_DIR="models/gguf"
-MODEL_PATH="$MODEL_DIR/Qwen_Qwen3.5-4B-Q4_K_M.gguf"
+# Download model if configured model does not exist
+MODEL_PATH=$(python3 -c "
+import yaml
+with open('config/model.yaml') as f:
+    config = yaml.safe_load(f)
+print(config['model']['path'])
+")
+MODEL_DIR=$(dirname "$MODEL_PATH")
+
 if [ ! -f "$MODEL_PATH" ]; then
     echo ""
-    echo "Downloading default model (Qwen3.5-4B-Q4_K_M)..."
+    echo "Configured model not found at: $MODEL_PATH"
+    echo "Downloading Qwen3.5-4B-Q4_K_M..."
     mkdir -p "$MODEL_DIR"
     MODEL_URL="https://huggingface.co/Qwen/Qwen3.5-4B-GGUF/resolve/main/qwen3.5-4b-q4_k_m.gguf"
     curl -fSL -o "$MODEL_PATH" "$MODEL_URL"
@@ -111,7 +118,7 @@ if [ ! -f "$MODEL_PATH" ]; then
         echo "  $MODEL_URL -> $MODEL_PATH"
     fi
 else
-    echo "Model already present. Skipping download."
+    echo "Model already present at: $MODEL_PATH. Skipping download."
 fi
 
 # Install ChatUI dependencies
