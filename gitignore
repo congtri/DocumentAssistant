@@ -1,0 +1,38 @@
+# Ignore Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignore virtual environment
+venv/
+.venv/
+
+# Ignore third-party binaries (llama.cpp, etc.)
+third_party/
+
+# Ignore model files
+models/
+
+# Ignore data/indexes (generated at runtime)
+data/
+
+# Ignore uploaded documents
+documents/source/
+
+# Ignore logs
+logs/
+
+# Ignore node_modules
+ChatUI/node_modules/
+
+# Ignore caveman/agent tool folders
+# .agents/
+# .clinerules/
+# .cursor/
+# .opencode/
+# .windsurf/
+# skills-lock.json
+# AGENTS.md
+
+# OS files
+.DS_Store
