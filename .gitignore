@@ -14,6 +14,9 @@ third_party/*
 # Ignore model files
 models/*
 !models/.gitkeep
+!models/gguf/
+models/gguf/*
+!models/gguf/.gitkeep
 
 # Ignore data/indexes (generated at runtime)
 data/*
