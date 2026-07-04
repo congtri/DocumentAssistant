@@ -1,5 +1,5 @@
 llama_cpp:
-  context_length: 8192
+  context_length: 10240
   host: 127.0.0.1
   port: 8081
 model:
