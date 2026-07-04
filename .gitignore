@@ -9,12 +9,15 @@ venv/
 
 # Ignore third-party binaries (llama.cpp, etc.)
 third_party/*
+!third_party/.gitkeep
 
 # Ignore model files
 models/*
+!models/.gitkeep
 
 # Ignore data/indexes (generated at runtime)
 data/*
+!data/.gitkeep
 
 # Ignore uploaded documents
 documents/source/*
