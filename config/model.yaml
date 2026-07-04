@@ -3,5 +3,5 @@ llama_cpp:
   host: 127.0.0.1
   port: 8081
 model:
-  name: Qwen3-0.6B-Q8_0
-  path: models/gguf/Qwen3-0.6B-Q8_0.gguf
+  name: Qwen3-1.7B-Q4_K_M
+  path: models/gguf/Qwen3-1.7B-Q4_K_M.gguf

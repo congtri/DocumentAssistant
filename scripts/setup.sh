@@ -107,15 +107,14 @@ MODEL_DIR=$(dirname "$MODEL_PATH")
 if [ ! -f "$MODEL_PATH" ]; then
     echo ""
     echo "Configured model not found at: $MODEL_PATH"
-    echo "Downloading Qwen3.5-4B-Q4_K_M from unsloth..."
+    echo "Downloading Qwen3-1.7B-Q4_K_M via huggingface-cli..."
     mkdir -p "$MODEL_DIR"
-    MODEL_URL="https://huggingface.co/unsloth/Qwen3.5-4B-GGUF/resolve/main/Qwen3.5-4B-Q4_K_M.gguf"
-    curl -fSL -o "$MODEL_PATH" "$MODEL_URL"
+    huggingface-cli download unsloth/Qwen3-1.7B-GGUF Qwen3-1.7B-Q4_K_M.gguf --local-dir "$MODEL_DIR"
     if [ $? -eq 0 ]; then
         echo "Model downloaded successfully."
     else
         echo "WARNING: Model download failed. Please download manually:"
-        echo "  $MODEL_URL -> $MODEL_PATH"
+        echo "  huggingface-cli download unsloth/Qwen3-1.7B-GGUF Qwen3-1.7B-Q4_K_M.gguf --local-dir $MODEL_DIR"
     fi
 else
     echo "Model already present at: $MODEL_PATH. Skipping download."
