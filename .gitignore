@@ -8,19 +8,19 @@ venv/
 .venv/
 
 # Ignore third-party binaries (llama.cpp, etc.)
-third_party/
+third_party/*
 
 # Ignore model files
-models/
+models/*
 
 # Ignore data/indexes (generated at runtime)
-data/
+data/*
 
 # Ignore uploaded documents
-documents/source/
+documents/source/*
 
 # Ignore logs
-logs/
+logs/*
 
 # Ignore node_modules
 ChatUI/node_modules/

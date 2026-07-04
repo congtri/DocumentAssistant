@@ -5,7 +5,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                        User's Browser                        │
+│                        User's Browser                       │
 │                                                             │
 │   ChatUI (React + Vite, :3000)                              │
 │   ├── Message rendering (markdown)                          │
@@ -15,7 +15,7 @@
                         │ HTTP (proxied to :8080)
                         ▼
 ┌─────────────────────────────────────────────────────────────┐
-│              FastAPI Backend (:8080)                          │
+│              FastAPI Backend (:8080)                        │
 │                                                             │
 │   /api/query    → RAG pipeline (search + generate)          │
 │   /api/chat     → Direct LLM generation                     │
@@ -25,23 +25,23 @@
 └────────┬────────────────────────────┬───────────────────────┘
          │                            │
          ▼                            ▼
-┌─────────────────────┐    ┌─────────────────────────────────┐
-│   RAG Pipeline      │    │   Document Ingestion            │
-│                     │    │                                 │
-│   1. Hybrid Search  │    │   1. Loader (PDF/DOCX/MD)       │
-│      ├── BM25 (0.4) │    │   2. Chunker (heading-based)    │
-│      └── FAISS(0.6) │    │   3. Embedder (MiniLM-L6-v2)   │
-│   2. Reranker       │    │   4. Index Builder              │
-│   3. Prompt Builder │    │      ├── FAISS (vectors)        │
-│   4. LLM Generate   │    │      └── BM25 (keywords)       │
+┌──────────────────────┐    ┌─────────────────────────────────┐
+│   RAG Pipeline       │    │   Document Ingestion            │
+│                      │    │                                 │
+│   1. Hybrid Search   │    │   1. Loader (PDF/DOCX/MD)       │
+│      ├── BM25 (0.4)  │    │   2. Chunker (heading-based)    │
+│      └── FAISS(0.6)  │    │   3. Embedder (MiniLM-L6-v2)    │
+│   2. Reranker        │    │   4. Index Builder              │
+│   3. Prompt Builder  │    │      ├── FAISS (vectors)        │
+│   4. LLM Generate    │    │      └── BM25 (keywords)        │
 │   5. Citation Extract│    │   5. Save to data/indexes/      │
-└────────┬────────────┘    └─────────────────────────────────┘
+└────────┬─────────────┘    └─────────────────────────────────┘
          │
          ▼
 ┌─────────────────────────────────────────────────────────────┐
-│              llama.cpp Server (:8081)                         │
+│              llama.cpp Server (:8081)                       │
 │                                                             │
-│   Model: Qwen3.5-4B-Q4_K_M.gguf                            │
+│   Model: Qwen3.5-4B-Q4_K_M.gguf                             │
 │   Context: 8192 tokens                                      │
 │   GPU layers: 99 (auto Metal/CUDA)                          │
 │   API: OpenAI-compatible /v1/chat/completions               │
@@ -52,36 +52,36 @@
 
 ### ChatUI (Frontend)
 
-| File | Purpose |
-|------|---------|
-| `src/api/client.js` | API client — all HTTP calls to backend |
-| `src/components/Header.jsx` | Status badge, clear button |
-| `src/components/ChatArea.jsx` | Message list, welcome screen, auto-scroll |
-| `src/components/Message.jsx` | Markdown rendering, source citations, `<think>` stripping |
-| `src/components/InputBar.jsx` | Textarea, file upload, RAG/Chat toggle, send button |
-| `src/styles/global.css` | CSS variables, light/dark theme, scrollbar |
-| `vite.config.js` | Dev server proxy (`/api/*` → `:8080`) |
+| File                          | Purpose                                                   |
+| ----------------------------- | --------------------------------------------------------- |
+| `src/api/client.js`           | API client — all HTTP calls to backend                    |
+| `src/components/Header.jsx`   | Status badge, clear button                                |
+| `src/components/ChatArea.jsx` | Message list, welcome screen, auto-scroll                 |
+| `src/components/Message.jsx`  | Markdown rendering, source citations, `<think>` stripping |
+| `src/components/InputBar.jsx` | Textarea, file upload, RAG/Chat toggle, send button       |
+| `src/styles/global.css`       | CSS variables, light/dark theme, scrollbar                |
+| `vite.config.js`              | Dev server proxy (`/api/*` → `:8080`)                     |
 
 ### Backend (Python)
 
-| Module | Files | Purpose |
-|--------|-------|---------|
-| `api/` | `server.py` | FastAPI app, routes, CORS, static serving |
-| `document/` | `pdf_loader.py`, `docx_loader.py`, `markdown_loader.py` | Extract text + metadata from files |
-| `chunking/` | `heading_splitter.py`, `splitter.py` | Split documents into searchable chunks |
-| `embedding/` | `embedding_service.py` | Generate 384-dim vectors (all-MiniLM-L6-v2) |
-| `retrieval/` | `faiss_store.py`, `bm25_store.py`, `hybrid_search.py`, `reranker.py` | Search indexes |
-| `rag/` | `pipeline.py`, `citation.py` | Orchestrate retrieval → generation → citations |
-| `llm/` | `llama_client.py`, `prompt_builder.py` | HTTP client to llama.cpp + prompt templates |
-| `utils/` | `settings.py`, `logger.py` | Config loader (YAML) + structured logging |
+| Module       | Files                                                                | Purpose                                        |
+| ------------ | -------------------------------------------------------------------- | ---------------------------------------------- |
+| `api/`       | `server.py`                                                          | FastAPI app, routes, CORS, static serving      |
+| `document/`  | `pdf_loader.py`, `docx_loader.py`, `markdown_loader.py`              | Extract text + metadata from files             |
+| `chunking/`  | `heading_splitter.py`, `splitter.py`                                 | Split documents into searchable chunks         |
+| `embedding/` | `embedding_service.py`                                               | Generate 384-dim vectors (all-MiniLM-L6-v2)    |
+| `retrieval/` | `faiss_store.py`, `bm25_store.py`, `hybrid_search.py`, `reranker.py` | Search indexes                                 |
+| `rag/`       | `pipeline.py`, `citation.py`                                         | Orchestrate retrieval → generation → citations |
+| `llm/`       | `llama_client.py`, `prompt_builder.py`                               | HTTP client to llama.cpp + prompt templates    |
+| `utils/`     | `settings.py`, `logger.py`                                           | Config loader (YAML) + structured logging      |
 
 ### Configuration
 
-| File | Controls |
-|------|----------|
-| `config/app.yaml` | Server host/port, document paths, logging level |
-| `config/model.yaml` | Model file path, llama.cpp host/port/context |
-| `config/rag.yaml` | Chunk size, embedding model, retrieval weights, generation params |
+| File                | Controls                                                          |
+| ------------------- | ----------------------------------------------------------------- |
+| `config/app.yaml`   | Server host/port, document paths, logging level                   |
+| `config/model.yaml` | Model file path, llama.cpp host/port/context                      |
+| `config/rag.yaml`   | Chunk size, embedding model, retrieval weights, generation params |
 
 ## Data Flow: User Asks a Question (RAG)
 
@@ -168,15 +168,15 @@ DocumentAssistant/
 
 ## Key Design Decisions
 
-| Decision | Rationale |
-|----------|-----------|
-| llama.cpp (not Ollama) | Smaller footprint, direct control, no extra daemon |
-| Hybrid BM25+FAISS | Keyword search catches exact terms; vectors catch semantics |
-| Heading-based chunking | Preserves document structure better than fixed-size splits |
-| all-MiniLM-L6-v2 | Fast, small (90MB), good quality for retrieval |
-| Qwen3.5-4B Q4_K_M | Best quality/size trade-off for local hardware |
-| Vite + React (ChatUI) | Fast dev experience, component isolation, hot reload |
-| No database | File-based indexes are simpler; adequate for single-user local use |
+| Decision               | Rationale                                                          |
+| ---------------------- | ------------------------------------------------------------------ |
+| llama.cpp (not Ollama) | Smaller footprint, direct control, no extra daemon                 |
+| Hybrid BM25+FAISS      | Keyword search catches exact terms; vectors catch semantics        |
+| Heading-based chunking | Preserves document structure better than fixed-size splits         |
+| all-MiniLM-L6-v2       | Fast, small (90MB), good quality for retrieval                     |
+| Qwen3.5-4B Q4_K_M      | Best quality/size trade-off for local hardware                     |
+| Vite + React (ChatUI)  | Fast dev experience, component isolation, hot reload               |
+| No database            | File-based indexes are simpler; adequate for single-user local use |
 
 ## Adding a New Document Format
 
