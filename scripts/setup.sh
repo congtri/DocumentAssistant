@@ -109,12 +109,12 @@ if [ ! -f "$MODEL_PATH" ]; then
     echo "Configured model not found at: $MODEL_PATH"
     echo "Downloading Qwen3-1.7B-Q4_K_M via huggingface-cli..."
     mkdir -p "$MODEL_DIR"
-    huggingface-cli download unsloth/Qwen3-1.7B-GGUF Qwen3-1.7B-Q4_K_M.gguf --local-dir "$MODEL_DIR"
+    hf download hf://unsloth/Qwen3-1.7B-GGUF/Qwen3-1.7B-Q4_K_M.gguf --local-dir "$MODEL_DIR"
     if [ $? -eq 0 ]; then
         echo "Model downloaded successfully."
     else
         echo "WARNING: Model download failed. Please download manually:"
-        echo "  huggingface-cli download unsloth/Qwen3-1.7B-GGUF Qwen3-1.7B-Q4_K_M.gguf --local-dir $MODEL_DIR"
+        echo "  hf download hf://unsloth/Qwen3-1.7B-GGUF/Qwen3-1.7B-Q4_K_M.gguf --local-dir $MODEL_DIR"
     fi
 else
     echo "Model already present at: $MODEL_PATH. Skipping download."
