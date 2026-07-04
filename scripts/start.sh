@@ -23,43 +23,24 @@ LLAMA_SERVER=$(find third_party/llama_cpp -name "llama-server" -type f 2>/dev/nu
 MODEL_PATH="models/gguf/Qwen_Qwen3.5-4B-Q4_K_M.gguf"
 
 if [ ! -f "$MODEL_PATH" ]; then
-    echo "ERROR: Model not found at $MODEL_PATH"
-    exit 1
+    echo "WARNING: Default model not found at $MODEL_PATH (backend will manage llama-server)"
 fi
 
-# Start llama.cpp server
-echo "Starting llama.cpp server..."
-if [ -f "$LLAMA_SERVER" ]; then
-    $LLAMA_SERVER \
-        --model "$MODEL_PATH" \
-        --host 127.0.0.1 \
-        --port 8081 \
-        --ctx-size 8192 \
-        --n-gpu-layers 99 \
-        &
-    LLAMA_PID=$!
-    echo "llama.cpp started (PID: $LLAMA_PID)"
-else
-    echo "WARNING: llama.cpp binary not found at $LLAMA_SERVER"
-    echo "Please ensure llama.cpp is installed in third_party/llama_cpp/"
-    echo "Continuing without llama.cpp..."
-fi
-
-# Wait for llama.cpp to be ready
-echo "Waiting for llama.cpp to start..."
-for i in $(seq 1 30); do
-    if curl -s http://127.0.0.1:8081/health > /dev/null 2>&1; then
-        echo "llama.cpp is ready!"
-        break
-    fi
-    sleep 1
-done
-
-# Start DocumentAssistant API
+# Start DocumentAssistant API (it manages llama-server lifecycle)
 echo "Starting DocumentAssistant API..."
 python -m backend.api.server &
 API_PID=$!
 echo "API started (PID: $API_PID)"
+
+# Wait for API to be ready
+echo "Waiting for API..."
+for i in $(seq 1 30); do
+    if curl -s http://127.0.0.1:8080/health > /dev/null 2>&1; then
+        echo "API is ready!"
+        break
+    fi
+    sleep 1
+done
 
 # Start ChatUI
 echo "Starting ChatUI..."
@@ -74,11 +55,16 @@ else
 fi
 
 # Wait for ChatUI and open browser
-echo "Waiting for services..."
-for i in $(seq 1 15); do
-    if curl -s http://127.0.0.1:3000 > /dev/null 2>&1; then
+echo "Waiting for ChatUI to start..."
+for i in $(seq 1 30); do
+    if curl -s -o /dev/null http://localhost:3000 2>/dev/null; then
         echo "ChatUI is ready!"
-        open http://127.0.0.1:3000
+        # Open default browser (cross-platform)
+        if command -v xdg-open > /dev/null 2>&1; then
+            xdg-open http://localhost:3000
+        elif command -v open > /dev/null 2>&1; then
+            open http://localhost:3000
+        fi
         break
     fi
     sleep 1
@@ -86,7 +72,7 @@ done
 
 echo ""
 echo "=== Services Running ==="
-echo "  ChatUI:       http://127.0.0.1:3000"
+echo "  ChatUI:       http://localhost:3000"
 echo "  API Backend:  http://127.0.0.1:8080"
 echo "  llama.cpp:    http://127.0.0.1:8081"
 echo "  Health:       http://127.0.0.1:8080/health"
@@ -99,7 +85,6 @@ cleanup() {
     echo "Shutting down..."
     [ -n "$CHATUI_PID" ] && kill $CHATUI_PID 2>/dev/null
     [ -n "$API_PID" ] && kill $API_PID 2>/dev/null
-    [ -n "$LLAMA_PID" ] && kill $LLAMA_PID 2>/dev/null
     echo "Done."
     exit 0
 }

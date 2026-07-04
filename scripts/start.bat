@@ -18,26 +18,15 @@ call venv\Scripts\activate.bat
 set MODEL_PATH=models\gguf\Qwen_Qwen3.5-4B-Q4_K_M.gguf
 
 if not exist "%MODEL_PATH%" (
-    echo ERROR: Model not found at %MODEL_PATH%
-    exit /b 1
+    echo WARNING: Default model not found at %MODEL_PATH% (backend will manage llama-server)
 )
 
-:: Find llama-server.exe anywhere inside third_party\llama_cpp\
-set LLAMA_SERVER=
-for /r "third_party\llama_cpp" %%f in (llama-server.exe) do (
-    if not defined LLAMA_SERVER set LLAMA_SERVER=%%f
-)
-if exist "%LLAMA_SERVER%" (
-    echo Starting llama.cpp server...
-    start /b "" %LLAMA_SERVER% --model %MODEL_PATH% --host 127.0.0.1 --port 8081 --ctx-size 8192 --n-gpu-layers 99
-    timeout /t 10 /nobreak >nul
-) else (
-    echo WARNING: llama.cpp not found at %LLAMA_SERVER%
-)
-
-:: Start DocumentAssistant API
+:: Start DocumentAssistant API (it manages llama-server lifecycle)
 echo Starting DocumentAssistant API...
 start /b "" python -m backend.api.server
+
+:: Wait for API
+timeout /t 15 /nobreak >nul
 
 :: Start ChatUI
 echo Starting ChatUI...

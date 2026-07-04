@@ -68,6 +68,34 @@ body {
   height: 100vh;
 }
 
+/* Processing banner */
+.processing-banner {
+  padding: 10px 24px;
+  background: var(--accent-light);
+  border-bottom: 1px solid var(--border);
+  text-align: center;
+}
+.processing-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+.processing-bar {
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+  max-width: 400px;
+  margin: 0 auto;
+}
+.processing-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;

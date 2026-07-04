@@ -55,3 +55,31 @@ export async function uploadFiles(files) {
   }
   return res.json()
 }
+
+export async function getProcessingStatus() {
+  try {
+    const res = await fetch(`${API_BASE}/api/processing`)
+    return await res.json()
+  } catch {
+    return { active: false, status: '', progress: 0 }
+  }
+}
+
+export async function getModels() {
+  const res = await fetch(`${API_BASE}/api/models`)
+  if (!res.ok) throw new Error('Failed to fetch models')
+  return res.json()
+}
+
+export async function switchModel(path) {
+  const res = await fetch(`${API_BASE}/api/models/switch`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ path }),
+  })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(err.detail || 'Switch failed')
+  }
+  return res.json()
+}

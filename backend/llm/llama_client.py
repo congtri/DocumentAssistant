@@ -22,7 +22,8 @@ class LlamaClient:
             response = await client.post(f"{self.base_url}/completion", json=payload)
             response.raise_for_status()
             data = response.json()
-            return data.get("content", "").strip()
+            content = data.get("content", "").strip()
+            return self._clean_thinking_tokens(content)
 
     async def generate_stream(self, prompt: str, temperature: float = 0.7, max_tokens: int = 1024):
         payload = {
@@ -51,6 +52,20 @@ class LlamaClient:
         except Exception as e:
             logger.warning(f"llama.cpp health check failed: {e}")
             return False
+
+    def _clean_thinking_tokens(self, text: str) -> str:
+        """Strip Qwen thinking/reasoning markers, keep only final answer."""
+        import re
+        # If model outputs a final answer block, extract only that
+        match = re.search(
+            r"\[Start of final answer\]\s*(.*?)\s*\[End of final answer\]",
+            text, re.DOTALL
+        )
+        if match:
+            return match.group(1).strip()
+        # Also handle <think>...</think> blocks
+        text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
+        return text
 
 
 llama_client = LlamaClient()

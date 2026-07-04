@@ -1,6 +1,6 @@
 import './Header.css'
 
-export default function Header({ status, onClear }) {
+export default function Header({ status, onClear, models, currentModel, onModelSwitch }) {
   const getStatusText = () => {
     if (status.loading) return 'Connecting…'
     if (!status.connected) return 'Offline'
@@ -25,6 +25,20 @@ export default function Header({ status, onClear }) {
         <h1 className="header-title">DocumentAssistant</h1>
       </div>
       <div className="header-right">
+        {models && models.length > 0 && (
+          <select
+            className="model-select"
+            value={currentModel}
+            onChange={(e) => onModelSwitch(e.target.value)}
+            title="Select model"
+          >
+            {models.map((m) => (
+              <option key={m.path} value={m.path}>
+                {m.name} ({m.size_mb} MB)
+              </option>
+            ))}
+          </select>
+        )}
         <button className="clear-btn" onClick={onClear} title="Clear conversation">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="3 6 5 6 21 6"/>

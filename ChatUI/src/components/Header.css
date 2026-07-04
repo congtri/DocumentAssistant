@@ -72,3 +72,23 @@
   border-color: var(--error-border);
   background: var(--error-bg);
 }
+
+.model-select {
+  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+  max-width: 200px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.model-select:hover {
+  border-color: var(--accent);
+}
+.model-select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-ring);
+}
