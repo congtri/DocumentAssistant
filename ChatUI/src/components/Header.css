@@ -13,6 +13,31 @@
   gap: 10px;
 }
 
+.llama-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.15s;
+  cursor: pointer;
+}
+.llama-btn:hover {
+  background: var(--hover);
+  color: var(--text);
+  border-color: var(--accent);
+}
+.llama-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
 .header-icon {
   width: 22px;
   height: 22px;
