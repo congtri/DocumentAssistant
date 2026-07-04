@@ -1,0 +1,4 @@
+logging:
+  level: INFO
+  file: logs/app.log
+  format: "%(asctime)s | %(levelname)-8s | %(name)s | %(message)s"

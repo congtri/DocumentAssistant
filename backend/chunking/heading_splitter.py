@@ -1,25 +1,24 @@
 import re
-from dataclasses import dataclass, field
 
-from backend.utils.logger import logger
-from backend.utils.settings import settings
-
-
-@dataclass
-class Chunk:
-    text: str
-    source: str
-    page: int | None = None
-    heading: str = ""
-    chunk_id: str = ""
-    metadata: dict = field(default_factory=dict)
+from backend.core.interfaces.chunk_strategy import ChunkStrategy
+from backend.core.logger import logger
+from backend.core.config import config
+from backend.domain.models import Chunk, Document
 
 
-class HeadingSplitter:
+class HeadingSplitter(ChunkStrategy):
     def __init__(self):
-        config = settings.chunking
-        self.chunk_size = config.get("chunk_size", 512)
-        self.min_chunk_size = config.get("min_chunk_size", 100)
+        chunking_config = config.chunking
+        self.chunk_size = chunking_config.get("chunk_size", 512)
+        self.min_chunk_size = chunking_config.get("min_chunk_size", 100)
+
+    def chunk(self, document: Document) -> list[Chunk]:
+        """Split a document into chunks by headings."""
+        all_chunks = []
+        for page in document.pages:
+            chunks = self.split(page.text, source=document.name, page=page.page_number)
+            all_chunks.extend(chunks)
+        return all_chunks
 
     def split(self, text: str, source: str, page: int | None = None) -> list[Chunk]:
         # Split by markdown headings

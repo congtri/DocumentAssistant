@@ -4,19 +4,20 @@ from pathlib import Path
 import numpy as np
 import faiss
 
-from backend.chunking.heading_splitter import Chunk
+from backend.core.interfaces.retriever import Retriever
+from backend.core.logger import logger
+from backend.core.config import config
+from backend.domain.models import Chunk
 from backend.embedding.embedding_service import embedding_service
-from backend.utils.logger import logger
-from backend.utils.settings import settings
 
 
-class FAISSStore:
+class FAISSStore(Retriever):
     def __init__(self):
-        self.dimension = settings.embedding.get("dimension", 384)
+        self._dimension = config.embedding.get("dimension", 384)
         self.index: faiss.IndexFlatIP | None = None
         self.chunks: list[Chunk] = []
-        self._index_path = settings.get_path(settings.data.get("indexes_dir", "data/indexes")) / "faiss.index"
-        self._meta_path = settings.get_path(settings.data.get("indexes_dir", "data/indexes")) / "chunks.json"
+        self._index_path = config.get_path(config.data.get("indexes_dir", "data/indexes")) / "faiss.index"
+        self._meta_path = config.get_path(config.data.get("indexes_dir", "data/indexes")) / "chunks.json"
 
     def build_index(self, chunks: list[Chunk]) -> None:
         if not chunks:
@@ -26,7 +27,7 @@ class FAISSStore:
         texts = [c.text for c in chunks]
         embeddings = embedding_service.embed_texts(texts)
 
-        self.index = faiss.IndexFlatIP(self.dimension)
+        self.index = faiss.IndexFlatIP(self._dimension)
         self.index.add(embeddings)
         self.chunks = chunks
 

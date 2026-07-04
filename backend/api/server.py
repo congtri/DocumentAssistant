@@ -13,8 +13,8 @@ import uvicorn
 
 from backend.llm.llama_client import llama_client
 from backend.rag.pipeline import rag_pipeline
-from backend.utils.logger import logger
-from backend.utils.settings import settings, ROOT_DIR, load_yaml
+from backend.core.logger import logger
+from backend.core.config import config, ROOT_DIR
 
 
 class QueryRequest(BaseModel):
@@ -76,10 +76,10 @@ class LlamaServerManager:
             logger.error(f"Model not found: {full_model}")
             return False
 
-        config = settings.llama_cpp
-        host = config.get("host", "127.0.0.1")
-        port = str(config.get("port", 8081))
-        ctx_size = str(config.get("context_length", 8192))
+        llama_cfg = config.llama_cpp
+        host = llama_cfg.get("host", "127.0.0.1")
+        port = str(llama_cfg.get("port", 8081))
+        ctx_size = str(llama_cfg.get("context_length", 8192))
 
         cmd = [
             str(self.binary),
@@ -121,7 +121,7 @@ llama_manager = LlamaServerManager()
 async def lifespan(app):
     # Startup: start llama-server if not already running
     if not await llama_client.health_check():
-        model_path = settings.model.get("path", "")
+        model_path = config.model.get("path", "")
         if model_path and llama_manager.binary:
             logger.info("llama-server not detected, starting it...")
             llama_manager.start(model_path)
@@ -200,10 +200,10 @@ async def upload_documents(files: list[UploadFile] = File(...)):
     if processing_state["active"]:
         raise HTTPException(status_code=409, detail="A document is already being processed")
 
-    source_dir = settings.get_path(settings.documents.get("source_dir", "documents/source"))
+    source_dir = config.get_path(config.documents.get("source_dir", "documents/source"))
     source_dir.mkdir(parents=True, exist_ok=True)
 
-    allowed_formats = settings.documents.get("supported_formats", ["pdf", "docx", "md"])
+    allowed_formats = config.documents.get("supported_formats", ["pdf", "docx", "md"])
     saved_filenames = []
 
     try:
@@ -249,8 +249,8 @@ async def upload_documents(files: list[UploadFile] = File(...)):
 async def status():
     return {
         "indexed": rag_pipeline.is_indexed,
-        "model": settings.model.get("name", "Unknown"),
-        "llama_cpp_url": f"http://{settings.llama_cpp.get('host')}:{settings.llama_cpp.get('port')}",
+        "model": config.model.get("name", "Unknown"),
+        "llama_cpp_url": f"http://{config.llama_cpp.get('host')}:{config.llama_cpp.get('port')}",
     }
 
 
@@ -273,7 +273,7 @@ async def list_models():
                     "path": str(f.relative_to(ROOT_DIR)),
                     "size_mb": round(f.stat().st_size / (1024 * 1024), 1),
                 })
-    current = settings.model.get("path", "")
+    current = config.model.get("path", "")
     return {"models": models, "current": current}
 
 
@@ -291,20 +291,20 @@ async def switch_model(request: dict):
     # Update model.yaml
     import yaml
     config_path = ROOT_DIR / "config" / "model.yaml"
-    config = {}
+    yaml_data = {}
     if config_path.exists():
         with open(config_path) as f:
-            config = yaml.safe_load(f) or {}
+            yaml_data = yaml.safe_load(f) or {}
 
-    config.setdefault("model", {})
-    config["model"]["name"] = full_path.stem
-    config["model"]["path"] = model_path
+    yaml_data.setdefault("model", {})
+    yaml_data["model"]["name"] = full_path.stem
+    yaml_data["model"]["path"] = model_path
 
     with open(config_path, "w") as f:
-        yaml.dump(config, f, default_flow_style=False)
+        yaml.dump(yaml_data, f, default_flow_style=False)
 
-    # Reload settings
-    settings._model = load_yaml("model.yaml")
+    # Reload config
+    config.reload()
 
     # Restart llama-server with new model
     if llama_manager.binary:
@@ -314,7 +314,7 @@ async def switch_model(request: dict):
 
         # Wait for llama-server to become healthy
         import httpx
-        llama_url = f"http://{settings.llama_cpp.get('host', '127.0.0.1')}:{settings.llama_cpp.get('port', 8081)}"
+        llama_url = f"http://{config.llama_cpp.get('host', '127.0.0.1')}:{config.llama_cpp.get('port', 8081)}"
         for _ in range(30):
             time.sleep(1)
             try:
@@ -339,12 +339,12 @@ async def switch_model(request: dict):
 
 
 def start_server():
-    config = settings.app
+    app_config = config.app
     uvicorn.run(
         "backend.api.server:app",
-        host=config.get("host", "127.0.0.1"),
-        port=config.get("port", 8080),
-        reload=config.get("debug", False),
+        host=app_config.get("host", "127.0.0.1"),
+        port=app_config.get("port", 8080),
+        reload=app_config.get("debug", False),
     )
 
 

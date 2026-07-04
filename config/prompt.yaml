@@ -1,0 +1,3 @@
+prompt:
+  templates_dir: backend/prompt/templates
+  format: qwen

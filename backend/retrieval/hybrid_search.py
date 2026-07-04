@@ -1,16 +1,17 @@
-from backend.chunking.heading_splitter import Chunk
+from backend.core.interfaces.retriever import Retriever
+from backend.core.logger import logger
+from backend.core.config import config
+from backend.domain.models import Chunk
 from backend.retrieval.faiss_store import faiss_store
 from backend.retrieval.bm25_store import bm25_store
-from backend.utils.logger import logger
-from backend.utils.settings import settings
 
 
-class HybridSearch:
+class HybridSearch(Retriever):
     def __init__(self):
-        config = settings.retrieval
-        self.bm25_weight = config.get("bm25_weight", 0.4)
-        self.vector_weight = config.get("vector_weight", 0.6)
-        self.top_k = config.get("top_k", 5)
+        retrieval_config = config.retrieval
+        self.bm25_weight = retrieval_config.get("bm25_weight", 0.4)
+        self.vector_weight = retrieval_config.get("vector_weight", 0.6)
+        self.top_k = retrieval_config.get("top_k", 5)
 
     def search(self, query: str, top_k: int | None = None) -> list[tuple[Chunk, float]]:
         k = top_k or self.top_k
@@ -51,10 +52,13 @@ class HybridSearch:
         logger.info(f"Hybrid search: {len(results)} results for query")
         return results
 
-    def build_indexes(self, chunks: list[Chunk]) -> None:
+    def build_index(self, chunks: list[Chunk]) -> None:
         faiss_store.build_index(chunks)
         bm25_store.build_index(chunks)
         logger.info(f"Built hybrid indexes with {len(chunks)} chunks")
+
+    # Keep backward-compatible alias
+    build_indexes = build_index
 
 
 hybrid_search = HybridSearch()

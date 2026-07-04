@@ -2,11 +2,12 @@ import math
 
 from rank_bm25 import BM25Okapi
 
-from backend.chunking.heading_splitter import Chunk
-from backend.utils.logger import logger
+from backend.core.interfaces.retriever import Retriever
+from backend.core.logger import logger
+from backend.domain.models import Chunk
 
 
-class BM25Store:
+class BM25Store(Retriever):
     def __init__(self):
         self.bm25: BM25Okapi | None = None
         self.chunks: list[Chunk] = []

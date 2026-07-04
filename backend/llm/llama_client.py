@@ -1,14 +1,18 @@
+import re
+from collections.abc import AsyncIterator
+
 import httpx
 
-from backend.utils.logger import logger
-from backend.utils.settings import settings
+from backend.core.interfaces.llm_client import LLMClient
+from backend.core.logger import logger
+from backend.core.config import config
 
 
-class LlamaClient:
+class LlamaClient(LLMClient):
     def __init__(self):
-        config = settings.llama_cpp
-        self.base_url = f"http://{config.get('host', '127.0.0.1')}:{config.get('port', 8081)}"
-        self.context_length = config.get("context_length", 8192)
+        llama_config = config.llama_cpp
+        self.base_url = f"http://{llama_config.get('host', '127.0.0.1')}:{llama_config.get('port', 8081)}"
+        self.context_length = llama_config.get("context_length", 8192)
 
     async def generate(self, prompt: str, temperature: float = 0.7, max_tokens: int = 1024) -> str:
         payload = {
@@ -55,15 +59,12 @@ class LlamaClient:
 
     def _clean_thinking_tokens(self, text: str) -> str:
         """Strip Qwen thinking/reasoning markers, keep only final answer."""
-        import re
-        # If model outputs a final answer block, extract only that
         match = re.search(
             r"\[Start of final answer\]\s*(.*?)\s*\[End of final answer\]",
             text, re.DOTALL
         )
         if match:
             return match.group(1).strip()
-        # Also handle <think>...</think> blocks
         text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
         return text
 

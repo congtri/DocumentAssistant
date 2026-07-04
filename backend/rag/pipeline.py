@@ -1,16 +1,18 @@
 from backend.chunking import chunk_document
-from backend.chunking.heading_splitter import Chunk
 from backend.document import load_document, load_all_documents
+from backend.domain.models import Chunk
 from backend.embedding.embedding_service import embedding_service
 from backend.llm.llama_client import llama_client
 from backend.llm.prompt_builder import prompt_builder
+from backend.pipeline.engine import PipelineEngine
+from backend.pipeline.stages import LoadDocumentsStage, ChunkDocumentsStage, BuildIndexesStage
 from backend.rag.citation import extract_citations, format_citations
 from backend.retrieval.hybrid_search import hybrid_search
 from backend.retrieval.reranker import reranker
 from backend.retrieval.bm25_store import bm25_store
 from backend.retrieval.faiss_store import faiss_store
-from backend.utils.logger import logger
-from backend.utils.settings import settings
+from backend.core.logger import logger
+from backend.core.config import config
 
 
 class RAGPipeline:
@@ -20,25 +22,19 @@ class RAGPipeline:
             bm25_store.build_index(faiss_store.chunks)
 
     async def ingest_documents(self, directory: str | None = None) -> int:
-        doc_dir = directory or str(settings.get_path(settings.documents.get("source_dir", "documents/source")))
-        documents = load_all_documents(doc_dir)
+        pipeline = PipelineEngine([
+            LoadDocumentsStage(directory),
+            ChunkDocumentsStage(),
+            BuildIndexesStage(),
+        ])
+        result = pipeline.execute()
 
-        if not documents:
-            logger.warning("No documents found to ingest")
+        if result.has_errors and not result.chunks:
+            logger.warning(f"Ingestion errors: {result.errors}")
             return 0
 
-        all_chunks = []
-        for doc in documents:
-            chunks = chunk_document(doc)
-            all_chunks.extend(chunks)
-
-        if all_chunks:
-            hybrid_search.build_indexes(all_chunks)
-            faiss_store.save()
-            self.is_indexed = True
-            logger.info(f"Ingested {len(documents)} documents, {len(all_chunks)} chunks")
-
-        return len(all_chunks)
+        self.is_indexed = True
+        return result.metadata.get("chunks_indexed", 0)
 
     async def query(self, question: str) -> dict:
         if not self.is_indexed:
@@ -51,13 +47,13 @@ class RAGPipeline:
             self.is_indexed = True
 
         # Retrieve relevant chunks
-        config = settings.retrieval
-        top_k = config.get("top_k", 5)
+        retrieval_config = config.retrieval
+        top_k = retrieval_config.get("top_k", 5)
         results = hybrid_search.search(question, top_k=top_k)
 
         # Rerank if enabled
-        if config.get("rerank", True) and results:
-            rerank_k = config.get("rerank_top_k", 3)
+        if retrieval_config.get("rerank", True) and results:
+            rerank_k = retrieval_config.get("rerank_top_k", 3)
             results = reranker.rerank(question, results, top_k=rerank_k)
 
         if not results:
@@ -67,7 +63,7 @@ class RAGPipeline:
             }
 
         # Build prompt with context, packing as much as fits
-        max_context = settings.rag.get("max_context_length", 6144)
+        max_context = config.rag.get("max_context_length", 6144)
         context_chunks = []
         total_len = 0
         for chunk, _ in results:
@@ -84,7 +80,7 @@ class RAGPipeline:
         prompt = prompt_builder.build_rag_prompt(question, context_chunks)
 
         # Generate answer
-        rag_config = settings.rag
+        rag_config = config.rag
         answer = await llama_client.generate(
             prompt,
             temperature=rag_config.get("temperature", 0.7),
@@ -105,7 +101,7 @@ class RAGPipeline:
 
     async def chat(self, question: str, history: list[dict] | None = None) -> str:
         prompt = prompt_builder.build_chat_prompt(question, history)
-        rag_config = settings.rag
+        rag_config = config.rag
         return await llama_client.generate(
             prompt,
             temperature=rag_config.get("temperature", 0.7),

@@ -1,20 +1,17 @@
-from backend.chunking.heading_splitter import heading_splitter, Chunk
+from backend.chunking.heading_splitter import heading_splitter
 from backend.chunking.splitter import recursive_splitter
-from backend.document.pdf_loader import Document
-from backend.utils.settings import settings
-from backend.utils.logger import logger
+from backend.core.config import config
+from backend.core.logger import logger
+from backend.domain.models import Chunk, Document
 
 
 def chunk_document(document: Document) -> list[Chunk]:
-    method = settings.chunking.get("method", "heading")
-    all_chunks = []
+    method = config.chunking.get("method", "heading")
 
-    for page in document.pages:
-        if method == "heading":
-            chunks = heading_splitter.split(page.text, source=document.name, page=page.page_number)
-        else:
-            chunks = recursive_splitter.split(page.text, source=document.name, page=page.page_number)
-        all_chunks.extend(chunks)
+    if method == "heading":
+        all_chunks = heading_splitter.chunk(document)
+    else:
+        all_chunks = recursive_splitter.chunk(document)
 
     logger.info(f"Chunked {document.name}: {len(all_chunks)} chunks")
     return all_chunks

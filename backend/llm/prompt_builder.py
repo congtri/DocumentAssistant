@@ -1,9 +1,10 @@
-from backend.utils.settings import settings
+from backend.core.interfaces.prompt_builder import PromptBuilder as PromptBuilderInterface
+from backend.core.config import config
 
 
-class PromptBuilder:
+class QwenPromptBuilder(PromptBuilderInterface):
     def __init__(self):
-        rag_config = settings.rag
+        rag_config = config.rag
         self.system_prompt = rag_config.get("system_prompt", "You are a helpful assistant.")
 
     def build_rag_prompt(self, question: str, context_chunks: list[dict]) -> str:
@@ -43,4 +44,4 @@ class PromptBuilder:
         return "\n\n---\n\n".join(parts)
 
 
-prompt_builder = PromptBuilder()
+prompt_builder = QwenPromptBuilder()

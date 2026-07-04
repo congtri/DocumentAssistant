@@ -1,0 +1,6 @@
+retrieval:
+  top_k: 10
+  rerank: true
+  rerank_top_k: 5
+  bm25_weight: 0.4
+  vector_weight: 0.6

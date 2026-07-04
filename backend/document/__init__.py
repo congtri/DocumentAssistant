@@ -1,9 +1,10 @@
 from pathlib import Path
 
-from backend.document.pdf_loader import pdf_loader, Document
+from backend.document.pdf_loader import pdf_loader
 from backend.document.docx_loader import docx_loader
 from backend.document.markdown_loader import markdown_loader
-from backend.utils.logger import logger
+from backend.core.logger import logger
+from backend.domain.models import Document
 
 
 LOADERS = {

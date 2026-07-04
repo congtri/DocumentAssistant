@@ -1,45 +1,528 @@
-# Commit Message Rules
+# DocumentAssistant Architecture Principles
 
-When generating commit messages, use the following format:
+Version: 1.0
 
-Change: <short summary of the overall change>
+---
 
-- <file name>: <description of changes>
-- <file name>: <description of changes>
-- <file name>: <description of changes>
+# Vision
 
-Rules:
+DocumentAssistant is not just a document chatbot.
 
-- The first line must start with `Change:`.
-- Summarize the purpose of the change in one sentence.
-- Include the most important modified files.
-- Describe what changed in each file.
-- Use English.
-- Keep descriptions concise.
-- Do not use Conventional Commits.
-- Do not include Git hashes, author names, or timestamps.
+It is a reusable, local-first RAG framework designed for desktop and edge devices.
 
-Example:
+Every architectural decision should support long-term maintainability, modularity, and extensibility.
 
-Change: Add initial chatbot API and configuration support
+---
 
-- src/api/chat.py: implement chat completion endpoint
-- src/core/config.py: add model configuration loader
-- tests/test_chat.py: add API unit tests
-- README.md: document setup and usage
+# Core Philosophy
 
-Respond terse like smart caveman. All technical substance stay. Only fluff die.
+The project should follow these principles.
 
-Rules:
-- Drop: articles (a/an/the), filler (just/really/basically), pleasantries, hedging
-- Fragments OK. Short synonyms. Technical terms exact. Code unchanged.
-- Pattern: [thing] [action] [reason]. [next step].
-- Not: "Sure! I'd be happy to help you with that."
-- Yes: "Bug in auth middleware. Fix:"
+1. Modular
 
-Switch level: /caveman lite|full|ultra|wenyan
-Stop: "stop caveman" or "normal mode"
+Every module has one responsibility.
 
-Auto-Clarity: drop caveman for security warnings, irreversible actions, user confused. Resume after.
+2. Replaceable
 
-Boundaries: code/commits/PRs written normal.
+Every major component can be replaced without affecting business logic.
+
+3. Local-first
+
+Everything runs locally.
+
+Cloud providers are optional plugins, never requirements.
+
+4. Simple
+
+Avoid unnecessary abstraction.
+
+Only introduce abstraction when multiple implementations are expected.
+
+5. Maintainable
+
+Readable code is more important than clever code.
+
+6. Testable
+
+Every service should be independently testable.
+
+---
+
+# Architecture Style
+
+Use a layered architecture.
+
+Presentation
+
+↓
+
+Application
+
+↓
+
+Domain
+
+↓
+
+Infrastructure
+
+Dependencies always point inward.
+
+Outer layers never contain business rules.
+
+---
+
+# Domain First
+
+Business logic must depend on domain models.
+
+Avoid passing dictionaries across modules.
+
+Prefer strongly typed models.
+
+Example
+
+Document
+
+Chunk
+
+Query
+
+Citation
+
+Answer
+
+Metadata
+
+---
+
+# SOLID
+
+Follow SOLID principles.
+
+Especially
+
+Single Responsibility
+
+Dependency Inversion
+
+Interface Segregation
+
+Avoid large utility classes.
+
+---
+
+# Dependency Injection
+
+Never instantiate concrete implementations inside business logic.
+
+Bad
+
+retriever = HybridRetriever()
+
+Good
+
+class QueryService:
+
+    def __init__(self, retriever: Retriever):
+        ...
+
+---
+
+# Interface-Based Design
+
+Every replaceable component should expose an interface.
+
+Examples
+
+EmbeddingProvider
+
+Retriever
+
+ChunkStrategy
+
+PromptBuilder
+
+StorageProvider
+
+IndexManager
+
+LLMClient
+
+Concrete implementations belong to Infrastructure.
+
+---
+
+# Separation of Responsibilities
+
+Document Module
+
+Responsible for reading documents.
+
+Chunking Module
+
+Responsible for splitting text.
+
+Embedding Module
+
+Responsible for generating vectors.
+
+Retrieval Module
+
+Responsible for searching.
+
+Prompt Module
+
+Responsible for prompt generation.
+
+LLM Module
+
+Responsible for inference.
+
+Storage Module
+
+Responsible for persistence.
+
+Index Module
+
+Responsible for index lifecycle.
+
+Evaluation Module
+
+Responsible for measuring quality.
+
+No module should perform another module's responsibility.
+
+---
+
+# Configuration
+
+Everything configurable belongs in YAML.
+
+Avoid hardcoded values.
+
+Examples
+
+chunk size
+
+embedding model
+
+retrieval strategy
+
+prompt template
+
+weights
+
+paths
+
+ports
+
+---
+
+# Prompt Management
+
+Prompt templates are not source code.
+
+Store prompts as Markdown.
+
+Prompt Builder loads templates and injects variables.
+
+---
+
+# Pipeline
+
+Complex workflows should use Pipeline Engine.
+
+Each stage has one responsibility.
+
+Stages should not know about future stages.
+
+Example
+
+Load
+
+↓
+
+Clean
+
+↓
+
+Chunk
+
+↓
+
+Embed
+
+↓
+
+Index
+
+---
+
+# Retrieval Principles
+
+Prefer quality over complexity.
+
+Pipeline
+
+Hybrid Search
+
+↓
+
+Metadata Filter
+
+↓
+
+Rerank
+
+↓
+
+LLM
+
+Avoid unnecessary retrieval tricks.
+
+Measure improvements before adding complexity.
+
+---
+
+# Metadata
+
+Every chunk should carry metadata.
+
+Minimum
+
+document id
+
+page
+
+heading
+
+language
+
+chunk id
+
+hash
+
+created time
+
+Metadata should flow through the entire pipeline.
+
+---
+
+# Document Lifecycle
+
+Documents have versions.
+
+Uploading the same file twice should not create duplicate indexes.
+
+Every document should have
+
+ID
+
+Hash
+
+Version
+
+Timestamp
+
+---
+
+# Storage
+
+Storage should be abstract.
+
+Current implementation
+
+Filesystem
+
+Future
+
+SQLite
+
+PostgreSQL
+
+Object Storage
+
+Business logic must not care.
+
+---
+
+# Error Handling
+
+Fail gracefully.
+
+Never crash because
+
+one document failed
+
+one embedding failed
+
+one chunk failed
+
+Log everything.
+
+Continue whenever possible.
+
+---
+
+# Logging
+
+Every important operation should be logged.
+
+Examples
+
+Upload
+
+Index
+
+Embedding
+
+Retrieval
+
+LLM
+
+Prompt
+
+Errors
+
+Logs should help debugging.
+
+---
+
+# Performance
+
+Optimize only after measuring.
+
+Preferred priorities
+
+Correctness
+
+↓
+
+Maintainability
+
+↓
+
+Performance
+
+↓
+
+Micro-optimizations
+
+---
+
+# Future Expansion
+
+Architecture should support future plugins.
+
+Embedding
+
+SentenceTransformer
+
+BGE
+
+E5
+
+llama.cpp
+
+Retriever
+
+FAISS
+
+Qdrant
+
+Chroma
+
+Storage
+
+Filesystem
+
+SQLite
+
+PostgreSQL
+
+LLM
+
+llama.cpp
+
+Ollama
+
+vLLM
+
+Adding new implementations should require minimal code changes.
+
+---
+
+# Code Quality
+
+Prefer
+
+small files
+
+small classes
+
+small functions
+
+clear naming
+
+type hints
+
+docstrings
+
+Avoid
+
+god classes
+
+magic constants
+
+hidden side effects
+
+deep inheritance
+
+circular imports
+
+---
+
+# Testing
+
+Every major component should support
+
+Unit Testing
+
+Integration Testing
+
+Regression Testing
+
+Business logic should be testable without running the UI.
+
+---
+
+# What This Project Is NOT
+
+This project is NOT
+
+a cloud platform
+
+a distributed system
+
+a Kubernetes service
+
+a microservice architecture
+
+Keep it lightweight.
+
+Everything should run comfortably on a developer laptop or office PC.
+
+---
+
+# Success Criteria
+
+A new developer should be able to
+
+understand the architecture in less than one hour,
+
+replace any major component in less than one day,
+
+and add a new feature without modifying unrelated modules.
+
+Architecture should always be easier to extend than to rewrite.

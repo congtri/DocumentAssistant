@@ -1,12 +1,4 @@
-from dataclasses import dataclass
-
-
-@dataclass
-class Citation:
-    source: str
-    page: int | None
-    heading: str
-    relevance_score: float
+from backend.domain.models import Citation, Chunk
 
 
 def format_citations(citations: list[Citation]) -> str:

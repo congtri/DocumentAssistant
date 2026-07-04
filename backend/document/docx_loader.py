@@ -1,27 +1,16 @@
 from pathlib import Path
-from dataclasses import dataclass, field
 
 from docx import Document as DocxDocument
 
-from backend.utils.logger import logger
+from backend.core.interfaces.document_loader import DocumentLoader
+from backend.core.logger import logger
+from backend.domain.models import Document, DocumentPage
 
 
-@dataclass
-class DocumentPage:
-    text: str
-    page_number: int
-    metadata: dict = field(default_factory=dict)
+class DocxLoader(DocumentLoader):
+    def supported_extensions(self) -> list[str]:
+        return [".docx"]
 
-
-@dataclass
-class Document:
-    name: str
-    path: str
-    pages: list[DocumentPage] = field(default_factory=list)
-    metadata: dict = field(default_factory=dict)
-
-
-class DocxLoader:
     def load(self, file_path: str | Path) -> Document:
         file_path = Path(file_path)
         if not file_path.exists():
