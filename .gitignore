@@ -26,13 +26,13 @@ logs/
 ChatUI/node_modules/
 
 # Ignore caveman/agent tool folders
-# .agents/
-# .clinerules/
-# .cursor/
-# .opencode/
-# .windsurf/
-# skills-lock.json
-# AGENTS.md
+.agents/
+.clinerules/
+.cursor/
+.opencode/
+.windsurf/
+skills-lock.json
+AGENTS.md
 
 # OS files
 .DS_Store

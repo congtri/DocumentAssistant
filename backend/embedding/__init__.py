@@ -1,0 +1,1 @@
+from backend.embedding.embedding_service import embedding_service

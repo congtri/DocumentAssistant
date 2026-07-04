@@ -1,0 +1,9 @@
+model:
+  name: Qwen3.5-4B
+  path: models/gguf/Qwen_Qwen3.5-4B-Q4_K_M.gguf
+
+llama_cpp:
+  host: 127.0.0.1
+  port: 8081
+  context_length: 8192
+  # llama-server serves its own built-in web UI at http://host:port/ (no separate install needed)
