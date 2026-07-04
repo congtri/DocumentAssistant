@@ -80,10 +80,10 @@ set MODEL_PATH=%MODEL_PATH:/=\%
 if not exist "%MODEL_PATH%" (
     echo.
     echo Configured model not found at: %MODEL_PATH%
-    echo Downloading Qwen3.5-4B-Q4_K_M...
+    echo Downloading Qwen3.5-4B-Q4_K_M from unsloth...
     for %%F in ("%MODEL_PATH%") do if not exist "%%~dpF" mkdir "%%~dpF"
     powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-        "Invoke-WebRequest -Uri 'https://huggingface.co/Qwen/Qwen3.5-4B-GGUF/resolve/main/qwen3.5-4b-q4_k_m.gguf' -OutFile '%MODEL_PATH%'"
+        "Invoke-WebRequest -Uri 'https://huggingface.co/unsloth/Qwen3.5-4B-GGUF/resolve/main/Qwen3.5-4B-Q4_K_M.gguf' -OutFile '%MODEL_PATH%'"
     if %errorlevel% neq 0 (
         echo WARNING: Model download failed. Please download manually.
     ) else (
