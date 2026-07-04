@@ -82,8 +82,8 @@ echo "Virtual environment activated"
 
 # Install dependencies
 echo "Installing Python dependencies..."
-pip install --upgrade pip
-pip install -r requirements.txt
+pip install --upgrade pip -q --progress-bar on
+pip install -r requirements.txt -q --progress-bar on
 
 # Create required directories
 echo ""

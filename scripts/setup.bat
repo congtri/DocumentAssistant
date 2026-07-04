@@ -60,8 +60,8 @@ call venv\Scripts\activate.bat
 
 :: Install dependencies
 echo Installing Python dependencies...
-pip install --upgrade pip
-pip install -r requirements.txt
+pip install --upgrade pip -q --progress-bar on
+pip install -r requirements.txt -q --progress-bar on
 
 :: Create required directories
 echo.
@@ -82,10 +82,10 @@ if not exist "%MODEL_PATH%" (
     echo Configured model not found at: %MODEL_PATH%
     echo Downloading Qwen3-1.7B-Q4_K_M via huggingface-cli...
     for %%F in ("%MODEL_PATH%") do if not exist "%%~dpF" mkdir "%%~dpF"
-    huggingface-cli download unsloth/Qwen3-1.7B-GGUF Qwen3-1.7B-Q4_K_M.gguf --local-dir "%MODEL_DIR%"
+    hf download hf://unsloth/Qwen3-1.7B-GGUF/Qwen3-1.7B-Q4_K_M.gguf --local-dir "%MODEL_DIR%"
     if %errorlevel% neq 0 (
         echo WARNING: Model download failed. Please download manually:
-        echo   huggingface-cli download unsloth/Qwen3-1.7B-GGUF Qwen3-1.7B-Q4_K_M.gguf
+        echo   hf download hf://unsloth/Qwen3-1.7B-GGUF/Qwen3-1.7B-Q4_K_M.gguf
     ) else (
         echo Model downloaded successfully.
     )
