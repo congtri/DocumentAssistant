@@ -1,7 +1,7 @@
 chunking:
   method: heading
-  chunk_size: 512
-  chunk_overlap: 50
+  chunk_size: 1024
+  chunk_overlap: 200
   min_chunk_size: 100
 
 embedding:
@@ -11,17 +11,18 @@ embedding:
   batch_size: 32
 
 retrieval:
-  top_k: 5
+  top_k: 10
   bm25_weight: 0.4
   vector_weight: 0.6
   rerank: true
-  rerank_top_k: 3
+  rerank_top_k: 5
 
 rag:
-  max_context_length: 4096
-  temperature: 0.7
+  max_context_length: 6144
+  temperature: 0.3
   max_tokens: 1024
   system_prompt: |
-    You are a helpful document assistant. Answer questions based on the provided context.
+    You are a precise document assistant. Answer questions using ONLY the provided context.
+    Be thorough - use all relevant information from the context to form a complete answer.
     If the answer is not in the context, say so clearly.
-    Always cite sources with document name and page number when available.
+    Cite sources with [number] matching the context reference numbers.

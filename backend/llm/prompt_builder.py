@@ -11,8 +11,11 @@ class PromptBuilder:
         return (
             f"<|im_start|>system\n{self.system_prompt}<|im_end|>\n"
             f"<|im_start|>user\n"
-            f"Context:\n{context_text}\n\n"
-            f"Question: {question}<|im_end|>\n"
+            f"Use the following document excerpts to answer the question. "
+            f"Read all excerpts carefully before answering.\n\n"
+            f"--- DOCUMENT EXCERPTS ---\n{context_text}\n--- END EXCERPTS ---\n\n"
+            f"Question: {question}\n\n"
+            f"Provide a detailed, accurate answer based on the excerpts above.<|im_end|>\n"
             f"<|im_start|>assistant\n"
         )
 

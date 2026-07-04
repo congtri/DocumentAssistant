@@ -63,11 +63,21 @@ class RAGPipeline:
                 "sources": [],
             }
 
-        # Build prompt with context
-        context_chunks = [
-            {"text": chunk.text, "source": chunk.source, "page": chunk.page}
-            for chunk, _ in results
-        ]
+        # Build prompt with context, packing as much as fits
+        max_context = settings.rag.get("max_context_length", 6144)
+        context_chunks = []
+        total_len = 0
+        for chunk, _ in results:
+            chunk_text = chunk.text
+            if total_len + len(chunk_text) > max_context:
+                # Include partial if significant portion fits
+                remaining = max_context - total_len
+                if remaining > 200:
+                    context_chunks.append({"text": chunk_text[:remaining], "source": chunk.source, "page": chunk.page})
+                break
+            context_chunks.append({"text": chunk_text, "source": chunk.source, "page": chunk.page})
+            total_len += len(chunk_text)
+
         prompt = prompt_builder.build_rag_prompt(question, context_chunks)
 
         # Generate answer
