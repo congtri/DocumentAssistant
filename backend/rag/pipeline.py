@@ -7,6 +7,7 @@ from backend.llm.prompt_builder import prompt_builder
 from backend.rag.citation import extract_citations, format_citations
 from backend.retrieval.hybrid_search import hybrid_search
 from backend.retrieval.reranker import reranker
+from backend.retrieval.bm25_store import bm25_store
 from backend.retrieval.faiss_store import faiss_store
 from backend.utils.logger import logger
 from backend.utils.settings import settings
@@ -14,7 +15,9 @@ from backend.utils.settings import settings
 
 class RAGPipeline:
     def __init__(self):
-        self.is_indexed = False
+        self.is_indexed = faiss_store.load()
+        if self.is_indexed and faiss_store.chunks:
+            bm25_store.build_index(faiss_store.chunks)
 
     async def ingest_documents(self, directory: str | None = None) -> int:
         doc_dir = directory or str(settings.get_path(settings.documents.get("source_dir", "documents/source")))
